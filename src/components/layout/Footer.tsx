@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
+import NewsletterForm from "./NewsletterForm";
 
 export default function Footer() {
   return (
@@ -70,16 +71,7 @@ export default function Footer() {
           <div className="max-w-md">
             <h4 className="text-xs text-white/60 font-medium mb-2">Join our mailing list</h4>
             <p className="text-[10px] text-white/30 mb-4">Be the first to know about new collections, Raya launches, and exclusive offers.</p>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-3 py-2 bg-white/5 border border-white/10 text-white text-xs placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors"
-              />
-              <button className="px-4 py-2 bg-soft-white text-deep-navy text-[10px] uppercase tracking-[0.15em] font-medium hover:bg-white transition-all whitespace-nowrap">
-                Subscribe
-              </button>
-            </div>
+            <NewsletterForm />
           </div>
         </div>
       </div>

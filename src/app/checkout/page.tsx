@@ -86,6 +86,12 @@ export default function CheckoutPage() {
           },
           items: items.map((item) => ({
             productId: item.productId,
+            variantId: item.variantId,
+            variantName: item.variantName,
+            variantSku: item.variantSku,
+            name: item.name,
+            price: item.price,
+            image: item.image,
             quantity: item.quantity,
           })),
           paymentMethod: "COD",

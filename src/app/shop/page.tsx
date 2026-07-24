@@ -23,31 +23,42 @@ function ShopContent() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [sort, setSort] = useState(searchParams.get("sort") || "newest");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
+  const fetchProducts = useCallback(async (pageNum: number, append: boolean = false) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
       if (sort) params.set("sort", sort);
       if (selectedCategory) params.set("category", selectedCategory);
+      params.set("page", String(pageNum));
+      params.set("limit", "12");
 
       const res = await fetch(`/api/products?${params.toString()}`);
       const data = await res.json();
-      setProducts(data.products || []);
+      setProducts((prev) => append ? [...prev, ...(data.products || [])] : (data.products || []));
+      setTotalPages(data.totalPages || 1);
+      setPage(pageNum);
     } catch (error) {
       console.error("Failed to fetch products:", error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [search, sort, selectedCategory]);
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(1);
   }, [fetchProducts]);
+
+  const loadMore = () => fetchProducts(page + 1, true);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -131,7 +142,20 @@ function ShopContent() {
               {loading ? (
                 <ProductGridSkeleton />
               ) : (
-                <ProductGrid products={products} />
+                <>
+                  <ProductGrid products={products} />
+                  {page < totalPages && (
+                    <div className="text-center mt-10">
+                      <button
+                        onClick={loadMore}
+                        disabled={loadingMore}
+                        className="px-6 py-2.5 border border-deep-navy text-deep-navy text-[10px] uppercase tracking-[0.2em] font-medium hover:bg-deep-navy hover:text-white transition-all disabled:opacity-50"
+                      >
+                        {loadingMore ? "Loading..." : "Load More"}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

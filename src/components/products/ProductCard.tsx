@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { formatPrice } from "@/lib/utils";
 import type { IProduct } from "@/types";
 
@@ -10,6 +11,9 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { data: session } = useSession();
+  const [wishlisted, setWishlisted] = useState(false);
+
   const categoryName =
     typeof product.category === "object" && product.category !== null
       ? (product.category as { name: string }).name
@@ -18,6 +22,24 @@ export default function ProductCard({ product }: ProductCardProps) {
   const images = product.images || [];
   const hasHoverImage = images.length > 1;
   const hoverImage = hasHoverImage ? images[1] : images[0];
+
+  const toggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!session?.user?.email) return;
+    try {
+      if (wishlisted) {
+        await fetch(`/api/wishlist?productId=${product._id}`, { method: "DELETE" });
+        setWishlisted(false);
+      } else {
+        await fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: product._id }),
+        });
+        setWishlisted(true);
+      }
+    } catch {}
+  };
 
   return (
     <Link href={`/product/${product._id}`} className="group block">
@@ -45,6 +67,17 @@ export default function ProductCard({ product }: ProductCardProps) {
             </svg>
           </div>
         )}
+        {session?.user?.email && (
+          <button
+            onClick={toggleWishlist}
+            className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-white/80 hover:bg-white transition-colors"
+            aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <svg className={`w-4 h-4 ${wishlisted ? "text-red-500 fill-red-500" : "text-deep-navy"}`} viewBox="0 0 24 24" fill={wishlisted ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        )}
         {!product.inStock && (
           <div className="absolute top-0 left-0 right-0 p-3">
             <span className="text-[9px] text-white/70 font-medium uppercase tracking-[0.15em]">
@@ -55,9 +88,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
       <div className="pt-2.5 space-y-0.5">
         {categoryName && (
-          <div
-            className="text-[9px] text-mid-gray uppercase tracking-[0.2em] font-medium"
-          >
+          <div className="text-[9px] text-mid-gray uppercase tracking-[0.2em] font-medium">
             {categoryName}
           </div>
         )}

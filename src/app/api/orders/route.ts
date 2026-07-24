@@ -11,6 +11,9 @@ const createOrderSchema = z.object({
     .array(
       z.object({
         productId: z.string().min(1),
+        variantId: z.string().optional().default(""),
+        variantName: z.string().optional().default(""),
+        variantSku: z.string().optional().default(""),
         name: z.string().min(1),
         quantity: z.number().int().positive(),
         price: z.number().positive(),
@@ -118,13 +121,37 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (item.price !== product.price) {
+      if (item.price !== product.price && !item.variantId) {
         return NextResponse.json(
           {
             error: `Price mismatch for "${item.name}". Expected ${product.price}, received ${item.price}. Please refresh and try again.`,
           },
           { status: 400 }
         );
+      }
+
+      if (item.variantId && product.variants && product.variants.length > 0) {
+        const variant = (product.variants as unknown as { _id: { toString(): string }; price: number; stock: number; name: string }[]).find(
+          (v) => v._id.toString() === item.variantId
+        );
+        if (variant) {
+          if (item.price !== variant.price) {
+            return NextResponse.json(
+              {
+                error: `Price mismatch for "${item.name}". Expected ${variant.price}, received ${item.price}. Please refresh and try again.`,
+              },
+              { status: 400 }
+            );
+          }
+          if (variant.stock < item.quantity) {
+            return NextResponse.json(
+              {
+                error: `Insufficient stock for "${item.name}" (${variant.name}). Available: ${variant.stock}, requested: ${item.quantity}.`,
+              },
+              { status: 400 }
+            );
+          }
+        }
       }
     }
 
@@ -140,6 +167,20 @@ export async function POST(request: NextRequest) {
       paymentMethod: result.data.paymentMethod,
       status: "pending",
     });
+
+    for (const item of result.data.items) {
+      if (item.variantId) {
+        await Product.updateOne(
+          { _id: item.productId, "variants._id": item.variantId },
+          { $inc: { "variants.$.stock": -item.quantity } }
+        );
+      } else {
+        await Product.updateOne(
+          { _id: item.productId },
+          { $inc: { stockQuantity: -item.quantity } }
+        );
+      }
+    }
 
     return NextResponse.json({ order }, { status: 201 });
   } catch (error) {

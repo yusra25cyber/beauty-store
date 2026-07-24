@@ -54,6 +54,9 @@ export async function GET(request: NextRequest) {
     const newArrival = searchParams.get("newArrival");
     const brand = searchParams.get("brand");
     const tag = searchParams.get("tag");
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
+    const skip = (page - 1) * limit;
 
     const query: Record<string, unknown> = {};
 
@@ -100,12 +103,17 @@ export async function GET(request: NextRequest) {
       sortOption = { createdAt: 1 };
     }
 
-    const products = await Product.find(query)
-      .populate("category", "name slug")
-      .sort(sortOption)
-      .lean();
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .populate("category", "name slug")
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Product.countDocuments(query),
+    ]);
 
-    return NextResponse.json({ products }, { status: 200 });
+    return NextResponse.json({ products, total, page, limit, totalPages: Math.ceil(total / limit) }, { status: 200 });
   } catch (error) {
     const errorId = logApiError("/api/products GET", error, {
       url: request.url,

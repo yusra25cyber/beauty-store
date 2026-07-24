@@ -1,12 +1,44 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Button from "@/components/ui/Button";
 import { FloatingWhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { FaWhatsapp, FaInstagram, FaFacebook, FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Message sent! We'll get back to you soon.");
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        toast.error(data.error || "Failed to send message");
+      }
+    } catch {
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -82,7 +114,7 @@ export default function ContactPage() {
               <h2 className="text-sm font-playfair font-bold text-deep-navy uppercase tracking-[0.2em] mb-8">
                 Send Us a Message
               </h2>
-              <form className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-xs font-medium text-deep-navy mb-1">
                     Your Name <span className="text-red-500">*</span>
@@ -90,6 +122,8 @@ export default function ContactPage() {
                   <input
                     type="text"
                     id="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     className="w-full px-3 py-2 text-xs border border-light-gray bg-white text-deep-navy placeholder:text-mid-gray/50 focus:outline-none"
                     placeholder="Enter your name"
                     required
@@ -102,6 +136,8 @@ export default function ContactPage() {
                   <input
                     type="email"
                     id="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     className="w-full px-3 py-2 text-xs border border-light-gray bg-white text-deep-navy placeholder:text-mid-gray/50 focus:outline-none"
                     placeholder="Enter your email"
                     required
@@ -114,11 +150,16 @@ export default function ContactPage() {
                   <textarea
                     id="message"
                     rows={5}
+                    value={formData.message}
+                    onChange={handleChange}
                     className="w-full px-3 py-2 text-xs border border-light-gray bg-white text-deep-navy placeholder:text-mid-gray/50 focus:outline-none resize-none"
                     placeholder="Write your message..."
                     required
                   />
                 </div>
+                <Button type="submit" variant="primary" fullWidth isLoading={submitting}>
+                  Send Message
+                </Button>
                 <p className="text-[10px] text-mid-gray">
                   Prefer to reach us directly?{" "}
                   <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "1234567890"}`} target="_blank" rel="noopener noreferrer" className="text-deep-navy hover:underline font-medium">WhatsApp</a>{" "}

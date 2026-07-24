@@ -195,22 +195,25 @@ function OrderContent() {
             </h2>
             <div className="space-y-4">
               {order.items.map((item, index) => (
-                <div key={index} className="flex gap-3 pb-3 border-b border-light-gray/50 last:border-b-0 last:pb-0">
-                  <div className="w-14 h-14 overflow-hidden bg-cool-ivory flex-shrink-0">
-                    {item.image && (
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-medium text-deep-navy">{item.name}</p>
-                    <p className="text-[10px] text-mid-gray">
-                      Qty: {item.quantity} x {formatPrice(item.price)}
+                  <div key={index} className="flex gap-3 pb-3 border-b border-light-gray/50 last:border-b-0 last:pb-0">
+                    <div className="w-14 h-14 overflow-hidden bg-cool-ivory flex-shrink-0">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-deep-navy">{item.name}</p>
+                      {item.variantName && (
+                        <p className="text-[10px] text-mid-gray">{item.variantName}</p>
+                      )}
+                      <p className="text-[10px] text-mid-gray">
+                        Qty: {item.quantity} x {formatPrice(item.price)}
+                      </p>
+                    </div>
+                    <p className="text-xs font-medium text-deep-navy">
+                      {formatPrice(item.price * item.quantity)}
                     </p>
                   </div>
-                  <p className="text-xs font-medium text-deep-navy">
-                    {formatPrice(item.price * item.quantity)}
-                  </p>
-                </div>
               ))}
             </div>
             <div className="mt-4 pt-4 border-t border-light-gray/50 flex justify-between">

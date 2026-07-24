@@ -1,7 +1,7 @@
 export function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-MY", {
     style: "currency",
-    currency: "USD",
+    currency: "MYR",
   }).format(price);
 }
 
@@ -50,7 +50,7 @@ export function buildSingleProductMessage(
   qty: number,
   price: number
 ): string {
-  return `Hi! I'd like to order:\nProduct: ${productName}\nQuantity: ${qty}\nPrice: $${price}\nPlease confirm availability.`;
+  return `Hi! I'd like to order:\nProduct: ${productName}\nQuantity: ${qty}\nPrice: RM${price}\nPlease confirm availability.`;
 }
 
 export function buildCheckoutMessage(
@@ -61,10 +61,10 @@ export function buildCheckoutMessage(
   address: string
 ): string {
   const itemLines = items
-    .map((item) => `- ${item.name} x${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`)
+    .map((item) => `- ${item.name} x${item.quantity} = RM${(item.price * item.quantity).toFixed(2)}`)
     .join("\n");
 
-  return `Hi! I'd like to place an order:\n${itemLines}\nTotal: $${total.toFixed(2)}\nName: ${customerName}\nPhone: ${phone}\nAddress: ${address}\nPayment: WhatsApp/COD`;
+  return `Hi! I'd like to place an order:\n${itemLines}\nTotal: RM${total.toFixed(2)}\nName: ${customerName}\nPhone: ${phone}\nAddress: ${address}\nPayment: WhatsApp/COD`;
 }
 
 export function classNames(...classes: (string | boolean | undefined | null)[]): string {

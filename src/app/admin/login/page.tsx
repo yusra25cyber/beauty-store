@@ -53,9 +53,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/20 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-playfair font-bold text-primary mb-2">
-            Glow & Grace
-          </h1>
+            <h1 className="text-3xl font-playfair font-bold text-primary mb-2">
+              Cloudnin3
+            </h1>
           <p className="text-text-secondary">Admin Panel Login</p>
         </div>
 
